@@ -1,0 +1,205 @@
+---
+title: "Apuntes Algebra relacional"
+date: "2022-04-18"
+hero_image: "./imagen1.jpg"
+hero_image_alt: "A girl sitting in the street"
+hero_image_credit_text: "Brooke Cagleß"
+hero_image_credit_link: "https://unsplash.com/es/fotos/4Y7epI1Kbok"
+---
+
+# Algebra relacional
+
+## Clase 18 de Abril del 2022
+
+## Operadores
+
+---
+
+Un **operando = una tabla.**
+
+Los operadores se ejecutan sobre los operandos. Hay 2 tipos de operadores:
+
+### Básicos:
+
+Azul → Teoría de conjuntos | Binarios
+
+Amarillo → Cood | Unarios
+
+- Unión ( U )
+- Diferencia ( - )
+- Producto Cartesiano ( X )
+- Restricción o Selección $\sigma$
+- Proyección  $\pi$
+
+### Derivados:
+
+Utilizan los operadores básicos.
+
+- Intersección ( $\cap$ )
+- Join ( $\Join$ )
+
+### Selección:
+
+Se obtienen datos de una columna los cuales deben cumplir con una condición:
+
+Se representa con $\sigma _{condición}(nombreRelacion)$
+
+ej.  $\sigma _{nacionalidad='España'}(AUTOR)$
+
+El codigo para hacer esto en SQL es:
+
+```sql
+select nombre, nacionalidad, institucion
+from autor
+where nacionalidad = 'España';
+```
+
+### Proyección
+
+Es similar a la selección, pero en este caso se obtienen las columnas de una relación.
+
+Se representa con $\pi _{columnas}(nombreRelacion)$
+
+Por ejemplo, para obtener el nombre e institución de los autores:
+
+$\pi _{nombre,institucion}(AUTOR)$
+
+```sql
+select nombre, institucion from autor;
+```
+
+Otros ejemplos de proyección:
+
+$\pi _{nombre,institucion}(AUTOR)$
+
+Y se puede colocar la selección dentro de la proyección:
+
+$\pi _{nombre,institucion}(\sigma _{nacionalidad='España'}(AUTOR))$
+
+En codigo esto es:
+
+```sql
+select nombre, institucion
+from autor
+where nacionalidad = 'España';
+```
+
+*Recomendación de la profa: Primero hacer el corte horizontal y despues hacer proyección.* 
+
+### Unión:
+
+Esto se puede ver con la teoría de conjuntos:
+
+Regresa todos los elementos de los 2 conjuntos (sin repetir elementos)
+
+En codigo esto se realiza de la siguiente forma (En SQL Server):
+
+```sql
+select col1,col2,col3
+from Tabla1
+union
+select col1_1,col2_2, col3_3
+from Tabla2;
+```
+
+### Diferencia:
+
+De una diferencia entre una tabla **A** con la tabla **B.** Regresa los datos de la tabla A sin los datos que se encuentran en la tabla B.
+
+En codigo se realiza de la siguiente forma (En SQL Server):
+
+```sql
+select col1,col2,col3
+from Tabla1
+except
+select col1_1,col2_2, col3_3
+from Tabla2;
+```
+
+### Intersección:
+
+Igualmente con el ejemplo de teoria de conjuntos se representa un ejemplo:
+
+
+De una intersección entre 2 tablas por ejemplo una tabla **A** y una tabla **B,** la operación regresa los datos que se encuentran en **ambas tablas**.
+
+En codigo se realiza de la siguiente forma (En SQL Server):
+
+```sql
+select col1,col2,col3
+from Tabla1
+intersect
+select col1_1,col2_2, col3_3
+from Tabla2;
+```
+
+### Join:
+
+La sintaxis en sql server de join es:
+
+```sql
+select A.col1,A.col2 ... , B.col1,B.col2
+from A inner join B
+on A.pk = B.fk
+```
+
+Ejemplo, suponiendo que se tienen las tablas
+
+**A:** ALUMNO = {nCuenta (pk) , nombre, fNacimiento}
+
+**B:** DOMICILIO = {nCuenta (fk), idDom (pk) , calle, colonia}
+
+Con estas tablas se realiza la siguiente operación:
+
+$A \Join _\theta B = \pi _{A1,A2,...} (\sigma _\theta (AXB))$
+
+Esto en SQL Server es:
+
+```sql
+select A.nCuenta, nombre, calle, colonia
+from ALUMNO A
+inner join DOMICILIO B
+on A.nCuenta = B.nCuenta;
+```
+
+## Ejercicios
+
+---
+
+**Me toco el ejercicio 3.**
+
+> *Obtenga el nombre completo y edad de los empleados de confianza, así como el nombre completo y edad de los dependientes económicos que hayan nacido después del año 2000 (unión).*
+> 
+
+Se desea realizar una unión aplicando un join en empleado con persona.confianza
+
+Tambien se requiere una selección en la tabla persona.dependiente con la condicion que el año sea mayor a 2000.
+
+$\pi _{nombre,paterno,materno,edad} (\sigma (EmpleadoXDependiente))+\pi _{nombre,paterno,materno,edad}(\sigma _{fechaNacimiento>='2000/01/01'}(Dependiente))$
+
+El codigo en SQL es el siguiente:
+
+```sql
+select nombre,paterno,materno,edad
+from persona.empleado A
+inner join persona.confianza B
+on A.idEmpleado = B.idEmpleado
+union
+select nombre,paterno,materno,edad
+from persona.dependiente
+where fechaNacimineto >= '2000/01/01';
+```
+
+**Otra forma de hacerlo sin el Join (mas optimo):**
+
+$\pi _{nombre,paterno,materno,edad} (\sigma_{tipoEmpleado='C'} (Empleado))+\pi _{nombre,paterno,materno,edad}(\sigma _{fechaNacimiento>='2000/01/01'}(Dependiente))$
+
+```sql
+select nombre,paterno,materno,edad
+from persona.empleado
+where tipoEmpleado = 'C'
+union
+select nombre,paterno,materno,edad
+from persona.dependiente
+where fechaNacimineto >= '2000/01/01';
+```
